@@ -1,0 +1,21 @@
+23/10/2026, 09:15 - Messages and calls are end-to-end encrypted. No one outside of this chat can read or listen to them.
+23/10/2026, 09:16 - Alex Mercer: Good morning everyone! Welcome to the AI Developers Community workspace.
+23/10/2026, 09:17 - Sarah Connor: Morning Alex! Super excited for today's session on local RAG architectures.
+23/10/2026, 09:18 - Dr. Evelyn Reed: Welcome everyone! I'll be presenting our benchmarking results comparing Qwen 2.5 1.5B against larger parameter models for contextual retrieval.
+23/10/2026, 09:20 - Marcus Vance: Sounds great Dr. Reed! Will you be sharing the slides and code samples?
+23/10/2026, 09:22 - Dr. Evelyn Reed: Yes absolutely. I'll post the repository link right after the discussion.
+23/10/2026, 09:25 - Alex Mercer: Quick reminder: our weekend hackathon registration closes tonight at 11:59 PM.
+23/10/2026, 09:26 - Alex Mercer: Make sure to submit your team details on the portal!
+This is a multi-line update regarding the hackathon tracks:
+Track 1: Local AI Agents & Copilots
+Track 2: Privacy-preserving Data Analytics
+Track 3: Open Source LLM Integrations
+
+23/10/2026, 11:45 - Sarah Connor: Has anyone tested ChromaDB with sentence-transformers for local persistent storage?
+23/10/2026, 11:47 - Marcus Vance: Yes Sarah, we use all-MiniLM-L6-v2 embeddings with ChromaDB PersistentClient. Works seamlessly on CPU with zero cloud latency.
+23/10/2026, 11:50 - Sarah Connor: <Media omitted>
+23/10/2026, 11:52 - Sarah Connor: Here's our architectural diagram showing SQLite thread reconstruction alongside vector retrieval.
+23/10/2026, 11:55 - Alex Mercer: That diagram looks very clean Sarah! Excellent work.
+
+23/10/2026, 14:10 - Dr. Evelyn Reed: The benchmark summary paper has been uploaded to our open repository.
+23/10/2026, 14:15 - Marcus Vance: Thanks Dr. Reed! Reviewing it now.

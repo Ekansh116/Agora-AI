@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-dotenv
+python-multipart
+sentence-transformers
+chromadb
+python-dateutil
+requests

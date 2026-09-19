@@ -3,7 +3,7 @@
 
 **Agora AI** is a local-first, privacy-focused community conversation intelligence platform designed to extract structured insights, analytical metrics, and grounded answers from unstructured community chat exports.
 
-Currently supporting exported WhatsApp text logs, Agora AI combines deterministic relational analytics in SQLite, vector similarity retrieval in ChromaDB, and local LLM reasoning via Ollama to make community knowledge searchable and actionable.
+Currently supporting exported WhatsApp text logs, Agora AI combines deterministic relational analytics in SQLite, hybrid retrieval across ChromaDB and SQLite FTS5, and local LLM reasoning via Ollama to make community knowledge searchable and actionable.
 
 ---
 
@@ -11,8 +11,8 @@ Currently supporting exported WhatsApp text logs, Agora AI combines deterministi
 
 - **Manual Review Does Not Scale**: High-volume community groups generate thousands of messages per week. Manually surfacing key topics, user pain points, or recurring themes is time-consuming.
 - **Chat Exports Are Unstructured**: Raw export files consist of unstructured text streams with inconsistent datetime formats, inline system notices, and thoughts split across multi-line messages.
-- **Keyword Search Misses Context**: Conventional substring matching fails on semantic intent, indirect phrasing, synonyms, and conversational context spanning multiple messages.
-- **Hybrid Analytical Approach**: Agora AI pairs deterministic SQL queries for exact numerical statistics (member counts, hourly density, daily volume curves) with vector retrieval (ChromaDB + Sentence Transformers) and local LLM reasoning (Qwen 2.5) for semantic Q&A.
+- **Single-Mode Retrieval Has Blind Spots**: Conventional substring matching fails on semantic intent, indirect phrasing, synonyms, and conversational context spanning multiple messages.
+- **Hybrid Analytical Approach**: Agora AI pairs deterministic SQL queries for exact numerical statistics with hybrid retrieval (ChromaDB semantic search + SQLite FTS5 lexical search), then uses local LLM reasoning (Qwen 2.5) for grounded Q&A.
 
 ---
 
@@ -50,7 +50,7 @@ Currently supporting exported WhatsApp text logs, Agora AI combines deterministi
   +-------------------+         +-------------------+          +-------------------+
 ```
 
-- **Frontend**: React 18, TypeScript, Vite, Lucide Icons, Custom CSS Tokens
+- **Frontend**: React 19, TypeScript, Vite, Lucide Icons, Custom CSS Tokens
 - **Backend**: FastAPI, SQLAlchemy, Pydantic, Uvicorn
 - **Vector Store**: ChromaDB (`PersistentClient`)
 - **Embeddings**: `sentence-transformers` (`all-MiniLM-L6-v2`)
@@ -59,7 +59,7 @@ Currently supporting exported WhatsApp text logs, Agora AI combines deterministi
 
 ---
 
-## 🧠 RAG Pipeline Architecture
+## 🧠 Hybrid RAG Pipeline Architecture
 
 ```
 WhatsApp Export (.txt)
@@ -82,6 +82,22 @@ WhatsApp Export (.txt)
         5. Generate Local Response via Ollama (Qwen 2.5 1.5B)
         6. Return Structured Reasoning + Evidence Citations + Confidence Rating
 ```
+
+---
+
+## 🔎 Hybrid Retrieval
+
+Agora AI uses two complementary retrieval strategies before generating an answer:
+
+1. **Semantic retrieval** — ChromaDB searches dense Sentence Transformer embeddings for conceptually related conversations.
+2. **Lexical retrieval** — SQLite FTS5 searches message sender/content using BM25 ranking for exact terms and identifiers.
+3. **Reciprocal Rank Fusion (RRF)** — the two ranked candidate lists are combined without treating vector distances and BM25 scores as directly comparable.
+4. **Thread reconstruction** — matched conversation IDs are loaded from SQLite in chronological order.
+5. **Local generation** — the retrieved evidence is passed to Ollama for the final structured response.
+
+The lexical index is initialized automatically at backend startup and backfilled from existing messages. SQLite triggers keep it synchronized with message inserts, updates, and deletes.
+
+Hybrid retrieval is intended to reduce blind spots from relying on either semantic similarity or keyword matching alone. Retrieval confidence is based on agreement between retrieval signals rather than treating a raw vector distance as answer confidence.
 
 ---
 
@@ -207,7 +223,7 @@ The frontend application runs at `http://localhost:5173`.
 
 - **Format Bounds**: The parser natively targets standard Android (`dd/mm/yyyy, hh:mm - Sender: Message`) and iOS (`[dd/mm/yyyy, hh:mm:ss] Sender: Message`) WhatsApp text exports. Non-standard timestamp formats or custom locale variations may require regex pattern additions.
 - **Local Hardware Dependency**: Local LLM inference response times depend on host CPU/GPU hardware. The default model `qwen2.5:1.5b` is selected for low memory consumption and low latency (~1-3s response time on CPU).
-- **Retrieval Scope**: Dense vector retrieval surfaces relevant conversation chunks based on semantic similarity. Exact numerical aggregations (e.g. total message counts or member post distributions) are computed deterministically by the SQL analytics service rather than vector search.
+- **Retrieval Scope**: Hybrid retrieval combines semantic similarity with lexical matching. Semantic search handles paraphrases and conceptual similarity, while SQLite FTS5/BM25 helps recover exact names, acronyms, keywords, and identifiers. Exact numerical aggregations (e.g. total message counts or member post distributions) are computed deterministically by the SQL analytics service rather than retrieval.
 
 ---
 

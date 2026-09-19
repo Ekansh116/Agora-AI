@@ -28,19 +28,36 @@ class RAGService:
                 "confidence_reason": "No matches returned from the vector store."
             }
 
-        # 2. Determine confidence
-        max_similarity = max(t["similarity_score"] for t in threads)
+        # 2. Estimate retrieval confidence from hybrid evidence coverage.
+        # Raw vector and BM25 scores are not comparable, so confidence is based
+        # on how many independent retrieval signals support the returned threads.
         num_threads = len(threads)
-        
-        if max_similarity > 0.75 and num_threads >= 2:
+        hybrid_threads = sum(
+            1 for thread in threads
+            if len(thread.get("retrieval_methods", [])) == 2
+        )
+        lexical_threads = sum(
+            1 for thread in threads
+            if "lexical" in thread.get("retrieval_methods", [])
+        )
+
+        if hybrid_threads >= 2:
             confidence = "High"
-            confidence_reason = f"Retrieved {num_threads} highly relevant conversations (highest similarity: {max_similarity})."
-        elif max_similarity > 0.55:
+            confidence_reason = (
+                f"{hybrid_threads} retrieved conversations were supported by both "
+                "semantic and lexical search."
+            )
+        elif num_threads >= 2 and lexical_threads >= 1:
             confidence = "Medium"
-            confidence_reason = f"Retrieved {num_threads} moderately relevant conversations (highest similarity: {max_similarity})."
+            confidence_reason = (
+                f"Retrieved {num_threads} conversations with agreement between "
+                "semantic and lexical retrieval signals on part of the result set."
+            )
         else:
             confidence = "Low"
-            confidence_reason = f"Retrieved threads have low match scores (highest similarity: {max_similarity})."
+            confidence_reason = (
+                "The result set has limited agreement across independent retrieval signals."
+            )
 
         # 3. Format Context and Evidence
         context_blocks = []

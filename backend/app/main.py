@@ -7,7 +7,7 @@ from app.routes import upload, insights, chat, explorer
 from app.providers.ollama_provider import OllamaProvider
 
 # Initialize SQLite database schema
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)\n\n# Initialize the lexical index used by hybrid retrieval.\nfrom app.core.database import ensure_message_fts_index\nensure_message_fts_index()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
